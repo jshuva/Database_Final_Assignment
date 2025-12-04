@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import api from '../api';
 import {
     BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
-    PieChart, Pie, Cell, Radar, RadarChart, PolarGrid, PolarAngleAxis, PolarRadiusAxis
+    PieChart, Pie, Cell, Radar, RadarChart, PolarGrid, PolarAngleAxis, PolarRadiusAxis, Legend, LabelList
 } from 'recharts';
 
 const AnalyticsDashboard = () => {
@@ -180,15 +180,41 @@ const AnalyticsDashboard = () => {
 
                     {/* Radar Chart: Attribute Performance */}
                     <div className="bg-white/80 backdrop-blur-md shadow-xl rounded-2xl p-4 border border-white/20">
-                        <h3 className="text-sm font-bold text-gray-700 mb-2 uppercase tracking-wider">Attribute Analysis</h3>
+                        <h3 className="text-sm font-bold text-gray-700 mb-4 uppercase tracking-wider border-b pb-2">Attribute Analysis</h3>
                         <div className="h-64 w-full">
                             <ResponsiveContainer width="100%" height="100%">
                                 <RadarChart cx="50%" cy="50%" outerRadius="80%" data={radarData}>
-                                    <PolarGrid />
-                                    <PolarAngleAxis dataKey="subject" tick={{ fontSize: 10 }} />
-                                    <PolarRadiusAxis angle={30} domain={[0, 10]} />
-                                    <Radar name="Market Avg" dataKey="A" stroke="#8884d8" fill="#8884d8" fillOpacity={0.6} />
-                                    <Tooltip />
+                                    <PolarGrid stroke="#e5e7eb" />
+                                    <PolarAngleAxis dataKey="subject" tick={{ fill: '#4b5563', fontSize: 11, fontWeight: 600 }} />
+                                    <PolarRadiusAxis angle={30} domain={[0, 10]} tick={false} axisLine={false} />
+                                    <Radar
+                                        name="Market Avg"
+                                        dataKey="A"
+                                        stroke="#6366f1"
+                                        strokeWidth={3}
+                                        fill="#818cf8"
+                                        fillOpacity={0.5}
+                                        label={({ x, y, value }) => (
+                                            <text
+                                                x={x}
+                                                y={y}
+                                                dy={-4}
+                                                fill="#1e1b4b"
+                                                fontSize={12}
+                                                fontWeight={800}
+                                                textAnchor="middle"
+                                                stroke="#ffffff"
+                                                strokeWidth={3}
+                                                paintOrder="stroke"
+                                            >
+                                                {value}
+                                            </text>
+                                        )}
+                                    />
+                                    <Tooltip
+                                        contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)' }}
+                                        itemStyle={{ color: '#4f46e5', fontWeight: 600 }}
+                                    />
                                 </RadarChart>
                             </ResponsiveContainer>
                         </div>
@@ -196,7 +222,7 @@ const AnalyticsDashboard = () => {
 
                     {/* Pie Chart: Category Distribution */}
                     <div className="bg-white/80 backdrop-blur-md shadow-xl rounded-2xl p-4 border border-white/20">
-                        <h3 className="text-sm font-bold text-gray-700 mb-2 uppercase tracking-wider">Category Share</h3>
+                        <h3 className="text-sm font-bold text-gray-700 mb-4 uppercase tracking-wider border-b pb-2">Category Share</h3>
                         <div className="h-64 w-full">
                             <ResponsiveContainer width="100%" height="100%">
                                 <PieChart>
@@ -206,15 +232,23 @@ const AnalyticsDashboard = () => {
                                         cy="50%"
                                         innerRadius={60}
                                         outerRadius={80}
-                                        fill="#8884d8"
                                         paddingAngle={5}
                                         dataKey="value"
+                                        label={({ percent }) => `${(percent * 100).toFixed(0)}%`}
                                     >
                                         {pieData.map((entry, index) => (
-                                            <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                                            <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} strokeWidth={0} />
                                         ))}
                                     </Pie>
-                                    <Tooltip />
+                                    <Tooltip
+                                        contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)' }}
+                                    />
+                                    <Legend
+                                        verticalAlign="bottom"
+                                        height={36}
+                                        iconType="circle"
+                                        formatter={(value) => <span className="text-xs font-medium text-gray-600">{value}</span>}
+                                    />
                                 </PieChart>
                             </ResponsiveContainer>
                         </div>
@@ -222,15 +256,31 @@ const AnalyticsDashboard = () => {
 
                     {/* Bar Chart: Score Distribution */}
                     <div className="bg-white/80 backdrop-blur-md shadow-xl rounded-2xl p-4 border border-white/20">
-                        <h3 className="text-sm font-bold text-gray-700 mb-2 uppercase tracking-wider">Score Distribution</h3>
+                        <h3 className="text-sm font-bold text-gray-700 mb-4 uppercase tracking-wider border-b pb-2">Score Distribution</h3>
                         <div className="h-48 w-full">
                             <ResponsiveContainer width="100%" height="100%">
                                 <BarChart data={barData}>
-                                    <CartesianGrid strokeDasharray="3 3" vertical={false} />
-                                    <XAxis dataKey="name" tick={{ fontSize: 10 }} />
-                                    <YAxis tick={{ fontSize: 10 }} />
-                                    <Tooltip />
-                                    <Bar dataKey="count" fill="#82ca9d" radius={[4, 4, 0, 0]} />
+                                    <defs>
+                                        <linearGradient id="colorCount" x1="0" y1="0" x2="0" y2="1">
+                                            <stop offset="5%" stopColor="#10b981" stopOpacity={0.8} />
+                                            <stop offset="95%" stopColor="#10b981" stopOpacity={0.3} />
+                                        </linearGradient>
+                                    </defs>
+                                    <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f3f4f6" />
+                                    <XAxis dataKey="name" tick={{ fontSize: 10, fill: '#9ca3af' }} axisLine={false} tickLine={false} />
+                                    <YAxis
+                                        tick={{ fontSize: 10, fill: '#9ca3af' }}
+                                        axisLine={false}
+                                        tickLine={false}
+                                        tickFormatter={(value) => value >= 1000 ? `${(value / 1000).toFixed(1)}K` : value}
+                                    />
+                                    <Tooltip
+                                        cursor={{ fill: '#f9fafb' }}
+                                        contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)' }}
+                                    />
+                                    <Bar dataKey="count" fill="url(#colorCount)" radius={[4, 4, 0, 0]}>
+                                        <LabelList dataKey="count" position="top" fontSize={10} fill="#6b7280" formatter={(value) => value >= 1000 ? `${(value / 1000).toFixed(1)}K` : value} />
+                                    </Bar>
                                 </BarChart>
                             </ResponsiveContainer>
                         </div>
