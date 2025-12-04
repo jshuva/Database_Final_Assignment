@@ -137,36 +137,53 @@ const AnalyticsDashboard = () => {
                         ) : (
                             <div className="space-y-3">
                                 {data.map((item, index) => (
-                                    <div key={index} className="bg-white p-4 rounded-xl border border-gray-100 shadow-sm hover:shadow-md transition-all group">
-                                        <div className="flex items-center justify-between">
-                                            <div className="flex items-center gap-4">
-                                                <div className={`flex-shrink-0 w-10 h-10 rounded-lg flex items-center justify-center font-bold text-lg shadow-inner ${index === 0 ? 'bg-yellow-100 text-yellow-700' :
-                                                    index === 1 ? 'bg-gray-100 text-gray-700' :
-                                                        index === 2 ? 'bg-orange-100 text-orange-700' : 'bg-indigo-50 text-indigo-600'
+                                    <div key={index} className="relative bg-white p-5 rounded-2xl border border-gray-100 shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all duration-300 group">
+                                        {/* Decorative background element */}
+                                        <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-indigo-50/50 to-purple-50/50 rounded-bl-full -z-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+
+                                        <div className="relative z-10 flex items-center justify-between mb-4">
+                                            <div className="flex items-center gap-5">
+                                                <div className={`flex-shrink-0 w-12 h-12 rounded-2xl flex items-center justify-center font-black text-xl shadow-sm border-2 ${index === 0 ? 'bg-yellow-50 border-yellow-200 text-yellow-600' :
+                                                        index === 1 ? 'bg-gray-50 border-gray-200 text-gray-600' :
+                                                            index === 2 ? 'bg-orange-50 border-orange-200 text-orange-600' :
+                                                                'bg-indigo-50 border-indigo-100 text-indigo-600'
                                                     }`}>
                                                     #{index + 1}
                                                 </div>
                                                 <div>
-                                                    <h3 className="font-bold text-gray-800 text-lg">{item.BrandName}</h3>
-                                                    <p className="text-xs text-gray-500 font-medium uppercase tracking-wide">{item.TypeName}</p>
+                                                    <h3 className="font-bold text-gray-800 text-lg tracking-tight group-hover:text-indigo-700 transition-colors">{item.BrandName}</h3>
+                                                    <div className="flex items-center gap-2 mt-1">
+                                                        <span className="px-2 py-0.5 rounded-md bg-gray-100 text-gray-500 text-[10px] font-bold uppercase tracking-wider">
+                                                            {item.TypeName}
+                                                        </span>
+                                                    </div>
                                                 </div>
                                             </div>
 
-                                            <div className="flex items-center gap-8">
-                                                <div className="text-right">
-                                                    <div className="text-3xl font-bold text-gray-800">
+                                            <div className="text-right">
+                                                <div className="flex items-baseline justify-end gap-1">
+                                                    <span className="text-3xl font-black text-gray-800 tracking-tight">
                                                         {item.AverageScore ? parseFloat(item.AverageScore).toFixed(1) : 'N/A'}
-                                                    </div>
-                                                    <div className="text-xs text-gray-400 font-medium uppercase">Average Score</div>
+                                                    </span>
+                                                    <span className="text-sm text-gray-400 font-medium">/ 10</span>
                                                 </div>
+                                                <div className="text-xs text-indigo-500 font-semibold uppercase tracking-wide mt-0.5">Average Score</div>
                                             </div>
                                         </div>
 
-                                        <div className="mt-3 h-2 w-full bg-gray-100 rounded-full overflow-hidden">
+                                        {/* Progress Bar Visualization */}
+                                        <div className="relative h-3 w-full bg-gray-100 rounded-full overflow-hidden shadow-inner">
                                             <div
-                                                className="h-full bg-gradient-to-r from-indigo-500 to-purple-600 rounded-full transition-all duration-500"
+                                                className={`h-full rounded-full transition-all duration-1000 ease-out ${index === 0 ? 'bg-gradient-to-r from-yellow-400 to-orange-500' :
+                                                        index === 1 ? 'bg-gradient-to-r from-gray-400 to-gray-600' :
+                                                            index === 2 ? 'bg-gradient-to-r from-orange-400 to-red-500' :
+                                                                'bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500'
+                                                    }`}
                                                 style={{ width: `${(parseFloat(item.AverageScore) / 10) * 100}%` }}
-                                            ></div>
+                                            >
+                                                {/* Shine effect */}
+                                                <div className="absolute top-0 left-0 bottom-0 right-0 bg-gradient-to-b from-white/20 to-transparent"></div>
+                                            </div>
                                         </div>
                                     </div>
                                 ))}

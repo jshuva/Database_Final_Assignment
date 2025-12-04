@@ -24,10 +24,10 @@ function App() {
                 {/* Navigation Tabs */}
                 <div className="flex space-x-1 bg-white/50 p-1 rounded-xl mb-6 w-fit border border-gray-200 shadow-sm flex-shrink-0">
                     <TabButton active={activeTab === 'overview'} onClick={() => setActiveTab('overview')} label="Overview" />
-                    <TabButton active={activeTab === 'software'} onClick={() => setActiveTab('software')} label="Software" />
-                    <TabButton active={activeTab === 'reviews'} onClick={() => setActiveTab('reviews')} label="Reviews" />
-                    <TabButton active={activeTab === 'users'} onClick={() => setActiveTab('users')} label="Users" />
                     <TabButton active={activeTab === 'data'} onClick={() => setActiveTab('data')} label="Raw Data" />
+                    <TabButton active={activeTab === 'software'} onClick={() => setActiveTab('software')} label="Software" />
+                    <TabButton active={activeTab === 'users'} onClick={() => setActiveTab('users')} label="Users" />
+                    <TabButton active={activeTab === 'reviews'} onClick={() => setActiveTab('reviews')} label="Reviews" />
                 </div>
 
                 <main className="flex-1 overflow-hidden">
