@@ -288,6 +288,46 @@ app.get('/api/analytics/insights', async (req, res) => {
         console.log('Market Avg Raw:', marketAvg);
         insights.marketAverage = marketAvg ? marketAvg.avg : 0;
 
+        // 6. Attribute Averages (for Radar/Bar Chart)
+        const [attrAvg] = await query(`
+            SELECT 
+                AVG(Friendliness) as Friendliness,
+                AVG(Price) as Price,
+                AVG(Features) as Features,
+                AVG(Accuracy) as Accuracy
+            FROM Evaluation
+        `);
+        insights.attributeAverages = attrAvg || { Friendliness: 0, Price: 0, Features: 0, Accuracy: 0 };
+
+        // 7. Score Distribution (for Bar Chart)
+        // We'll group by rounded average score
+        const distSql = `
+            SELECT 
+                FLOOR((Friendliness + Features + Accuracy) / 3) as ScoreRange,
+                COUNT(*) as Count
+            FROM Evaluation
+            GROUP BY ScoreRange
+            ORDER BY ScoreRange
+        `;
+        const distribution = await query(distSql);
+        // Normalize to ensure we have keys for 0-10
+        const distMap = { 0: 0, 1: 0, 2: 0, 3: 0, 4: 0, 5: 0, 6: 0, 7: 0, 8: 0, 9: 0, 10: 0 };
+        distribution.forEach(d => {
+            if (distMap[d.ScoreRange] !== undefined) distMap[d.ScoreRange] = d.Count;
+        });
+        insights.scoreDistribution = distMap;
+
+        // 8. Category Distribution (for Pie Chart)
+        const catDistSql = `
+            SELECT pt.TypeName as name, COUNT(e.EvaluationID) as value
+            FROM ProductType pt
+            JOIN SoftwareSystem ss ON pt.ProductTypeID = ss.ProductTypeID
+            JOIN Evaluation e ON ss.SystemID = e.SystemID
+            GROUP BY pt.ProductTypeID
+        `;
+        const catDist = await query(catDistSql);
+        insights.categoryDistribution = catDist;
+
         console.log('Final Insights Object:', insights);
         res.json(insights);
     } catch (err) {

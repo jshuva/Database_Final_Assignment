@@ -1,5 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import api from '../api';
+import {
+    BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
+    PieChart, Pie, Cell, Radar, RadarChart, PolarGrid, PolarAngleAxis, PolarRadiusAxis
+} from 'recharts';
 
 const AnalyticsDashboard = () => {
     const [limit, setLimit] = useState(5);
@@ -24,6 +28,26 @@ const AnalyticsDashboard = () => {
     useEffect(() => {
         fetchData();
     }, [limit]);
+
+    // Prepare data for charts
+    const radarData = insights?.attributeAverages ? [
+        { subject: 'Friendliness', A: parseFloat(insights.attributeAverages.Friendliness).toFixed(2), fullMark: 10 },
+        { subject: 'Price', A: parseFloat(insights.attributeAverages.Price).toFixed(2), fullMark: 10 },
+        { subject: 'Features', A: parseFloat(insights.attributeAverages.Features).toFixed(2), fullMark: 10 },
+        { subject: 'Accuracy', A: parseFloat(insights.attributeAverages.Accuracy).toFixed(2), fullMark: 10 },
+    ] : [];
+
+    const barData = insights?.scoreDistribution ? Object.entries(insights.scoreDistribution).map(([score, count]) => ({
+        name: `${score}★`,
+        count: count
+    })) : [];
+
+    const pieData = insights?.categoryDistribution ? insights.categoryDistribution.map(item => ({
+        name: item.name,
+        value: item.value
+    })) : [];
+
+    const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#8884d8', '#82ca9d'];
 
     return (
         <div className="flex flex-col gap-6">
@@ -77,82 +101,141 @@ const AnalyticsDashboard = () => {
                 </div>
             </div>
 
-            {/* Main Content: Top Rated */}
-            <div className="bg-white/80 backdrop-blur-md shadow-xl rounded-2xl p-6 border border-white/20 flex flex-col">
-                <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 gap-4">
-                    <div>
-                        <h2 className="text-2xl font-bold text-gray-800 bg-clip-text text-transparent bg-gradient-to-r from-gray-700 to-gray-900">
-                            Market Performance Leaders
-                        </h2>
-                        <p className="text-sm text-gray-500">Top performing software based on user evaluations.</p>
+            {/* Main Content Grid */}
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+
+                {/* Left Column: Market Performance Leaders */}
+                <div className="lg:col-span-2 bg-white/80 backdrop-blur-md shadow-xl rounded-2xl p-6 border border-white/20 flex flex-col">
+                    <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 gap-4">
+                        <div>
+                            <h2 className="text-2xl font-bold text-gray-800 bg-clip-text text-transparent bg-gradient-to-r from-gray-700 to-gray-900">
+                                Market Performance Leaders
+                            </h2>
+                            <p className="text-sm text-gray-500">Top performing software based on user evaluations.</p>
+                        </div>
+
+                        <div className="flex items-center gap-4 bg-gray-50 p-2 rounded-xl border border-gray-200">
+                            <div className="flex items-center gap-2">
+                                <label className="text-xs font-bold text-gray-500 uppercase">Top N:</label>
+                                <input
+                                    type="number"
+                                    min="1"
+                                    max="50"
+                                    className="w-12 p-1 rounded border border-gray-300 text-center text-sm focus:ring-2 focus:ring-indigo-500 outline-none"
+                                    value={limit}
+                                    onChange={(e) => setLimit(e.target.value)}
+                                />
+                            </div>
+                        </div>
                     </div>
 
-                    <div className="flex items-center gap-4 bg-gray-50 p-2 rounded-xl border border-gray-200">
-                        <div className="flex items-center gap-2">
-                            <label className="text-xs font-bold text-gray-500 uppercase">Top N:</label>
-                            <input
-                                type="number"
-                                min="1"
-                                max="50"
-                                className="w-12 p-1 rounded border border-gray-300 text-center text-sm focus:ring-2 focus:ring-indigo-500 outline-none"
-                                value={limit}
-                                onChange={(e) => setLimit(e.target.value)}
-                            />
-                        </div>
+                    <div className="mt-2">
+                        {loading ? (
+                            <div className="flex items-center justify-center h-48">
+                                <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-indigo-600"></div>
+                            </div>
+                        ) : (
+                            <div className="space-y-3">
+                                {data.map((item, index) => (
+                                    <div key={index} className="bg-white p-4 rounded-xl border border-gray-100 shadow-sm hover:shadow-md transition-all group">
+                                        <div className="flex items-center justify-between">
+                                            <div className="flex items-center gap-4">
+                                                <div className={`flex-shrink-0 w-10 h-10 rounded-lg flex items-center justify-center font-bold text-lg shadow-inner ${index === 0 ? 'bg-yellow-100 text-yellow-700' :
+                                                    index === 1 ? 'bg-gray-100 text-gray-700' :
+                                                        index === 2 ? 'bg-orange-100 text-orange-700' : 'bg-indigo-50 text-indigo-600'
+                                                    }`}>
+                                                    #{index + 1}
+                                                </div>
+                                                <div>
+                                                    <h3 className="font-bold text-gray-800 text-lg">{item.BrandName}</h3>
+                                                    <p className="text-xs text-gray-500 font-medium uppercase tracking-wide">{item.TypeName}</p>
+                                                </div>
+                                            </div>
+
+                                            <div className="flex items-center gap-8">
+                                                <div className="text-right">
+                                                    <div className="text-3xl font-bold text-gray-800">
+                                                        {item.AverageScore ? parseFloat(item.AverageScore).toFixed(1) : 'N/A'}
+                                                    </div>
+                                                    <div className="text-xs text-gray-400 font-medium uppercase">Average Score</div>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        <div className="mt-3 h-2 w-full bg-gray-100 rounded-full overflow-hidden">
+                                            <div
+                                                className="h-full bg-gradient-to-r from-indigo-500 to-purple-600 rounded-full transition-all duration-500"
+                                                style={{ width: `${(parseFloat(item.AverageScore) / 10) * 100}%` }}
+                                            ></div>
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+                        )}
                     </div>
                 </div>
 
-                <div className="mt-2">
-                    {loading ? (
-                        <div className="flex items-center justify-center h-48">
-                            <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-indigo-600"></div>
+                {/* Right Column: Analytics & Trends */}
+                <div className="lg:col-span-1 flex flex-col gap-6">
+
+                    {/* Radar Chart: Attribute Performance */}
+                    <div className="bg-white/80 backdrop-blur-md shadow-xl rounded-2xl p-4 border border-white/20">
+                        <h3 className="text-sm font-bold text-gray-700 mb-2 uppercase tracking-wider">Attribute Analysis</h3>
+                        <div className="h-64 w-full">
+                            <ResponsiveContainer width="100%" height="100%">
+                                <RadarChart cx="50%" cy="50%" outerRadius="80%" data={radarData}>
+                                    <PolarGrid />
+                                    <PolarAngleAxis dataKey="subject" tick={{ fontSize: 10 }} />
+                                    <PolarRadiusAxis angle={30} domain={[0, 10]} />
+                                    <Radar name="Market Avg" dataKey="A" stroke="#8884d8" fill="#8884d8" fillOpacity={0.6} />
+                                    <Tooltip />
+                                </RadarChart>
+                            </ResponsiveContainer>
                         </div>
-                    ) : (
-                        <div className="space-y-3">
-                            {data.map((item, index) => (
-                                <div key={index} className="bg-white p-4 rounded-xl border border-gray-100 shadow-sm hover:shadow-md transition-all group">
-                                    <div className="flex items-center justify-between">
-                                        <div className="flex items-center gap-4">
-                                            <div className={`flex-shrink-0 w-10 h-10 rounded-lg flex items-center justify-center font-bold text-lg shadow-inner ${index === 0 ? 'bg-yellow-100 text-yellow-700' :
-                                                index === 1 ? 'bg-gray-100 text-gray-700' :
-                                                    index === 2 ? 'bg-orange-100 text-orange-700' : 'bg-indigo-50 text-indigo-600'
-                                                }`}>
-                                                #{index + 1}
-                                            </div>
-                                            <div>
-                                                <h3 className="font-bold text-gray-800 text-lg">{item.BrandName}</h3>
-                                                <p className="text-xs text-gray-500 font-medium uppercase tracking-wide">{item.TypeName}</p>
-                                            </div>
-                                        </div>
+                    </div>
 
-                                        <div className="flex items-center gap-8">
-                                            {/* Current Score */}
-                                            <div className="text-right">
-                                                <div className="text-3xl font-bold text-gray-800">
-                                                    {item.AverageScore ? parseFloat(item.AverageScore).toFixed(1) : 'N/A'}
-                                                </div>
-                                                <div className="text-xs text-gray-400 font-medium uppercase">Average Score</div>
-                                            </div>
-                                        </div>
-                                    </div>
-
-                                    {/* Progress Bar Visualization */}
-                                    <div className="mt-3 h-2 w-full bg-gray-100 rounded-full overflow-hidden">
-                                        <div
-                                            className="h-full bg-gradient-to-r from-indigo-500 to-purple-600 rounded-full transition-all duration-500"
-                                            style={{ width: `${(parseFloat(item.AverageScore) / 5) * 100}%` }}
-                                        ></div>
-                                    </div>
-                                </div>
-                            ))}
-
-                            {data.length === 0 && (
-                                <div className="text-center text-gray-500 py-12">
-                                    No data available for analysis.
-                                </div>
-                            )}
+                    {/* Pie Chart: Category Distribution */}
+                    <div className="bg-white/80 backdrop-blur-md shadow-xl rounded-2xl p-4 border border-white/20">
+                        <h3 className="text-sm font-bold text-gray-700 mb-2 uppercase tracking-wider">Category Share</h3>
+                        <div className="h-64 w-full">
+                            <ResponsiveContainer width="100%" height="100%">
+                                <PieChart>
+                                    <Pie
+                                        data={pieData}
+                                        cx="50%"
+                                        cy="50%"
+                                        innerRadius={60}
+                                        outerRadius={80}
+                                        fill="#8884d8"
+                                        paddingAngle={5}
+                                        dataKey="value"
+                                    >
+                                        {pieData.map((entry, index) => (
+                                            <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                                        ))}
+                                    </Pie>
+                                    <Tooltip />
+                                </PieChart>
+                            </ResponsiveContainer>
                         </div>
-                    )}
+                    </div>
+
+                    {/* Bar Chart: Score Distribution */}
+                    <div className="bg-white/80 backdrop-blur-md shadow-xl rounded-2xl p-4 border border-white/20">
+                        <h3 className="text-sm font-bold text-gray-700 mb-2 uppercase tracking-wider">Score Distribution</h3>
+                        <div className="h-48 w-full">
+                            <ResponsiveContainer width="100%" height="100%">
+                                <BarChart data={barData}>
+                                    <CartesianGrid strokeDasharray="3 3" vertical={false} />
+                                    <XAxis dataKey="name" tick={{ fontSize: 10 }} />
+                                    <YAxis tick={{ fontSize: 10 }} />
+                                    <Tooltip />
+                                    <Bar dataKey="count" fill="#82ca9d" radius={[4, 4, 0, 0]} />
+                                </BarChart>
+                            </ResponsiveContainer>
+                        </div>
+                    </div>
+
                 </div>
             </div>
         </div>
