@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import api from '../api';
 
 const AnalyticsDashboard = () => {
-    const [limit, setLimit] = useState(5);
+    const [limit, setLimit] = useState(6);
     const [data, setData] = useState([]);
     const [insights, setInsights] = useState(null);
     const [loading, setLoading] = useState(false);
@@ -26,7 +26,7 @@ const AnalyticsDashboard = () => {
     }, [limit]);
 
     return (
-        <div className="flex flex-col gap-6 h-full overflow-hidden">
+        <div className="flex flex-col gap-6">
 
             {/* Top Section: Insights Cards */}
             <div className="grid grid-cols-1 md:grid-cols-5 gap-4 flex-shrink-0">
@@ -78,7 +78,7 @@ const AnalyticsDashboard = () => {
             </div>
 
             {/* Main Content: Top Rated */}
-            <div className="bg-white/80 backdrop-blur-md shadow-xl rounded-2xl p-6 border border-white/20 flex-1 overflow-hidden flex flex-col">
+            <div className="bg-white/80 backdrop-blur-md shadow-xl rounded-2xl p-6 border border-white/20 flex flex-col">
                 <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 gap-4">
                     <div>
                         <h2 className="text-2xl font-bold text-gray-800 bg-clip-text text-transparent bg-gradient-to-r from-gray-700 to-gray-900">
@@ -102,7 +102,7 @@ const AnalyticsDashboard = () => {
                     </div>
                 </div>
 
-                <div className="flex-1 overflow-y-auto pr-2 custom-scrollbar">
+                <div className="mt-2">
                     {loading ? (
                         <div className="flex items-center justify-center h-48">
                             <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-indigo-600"></div>
