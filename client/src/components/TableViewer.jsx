@@ -7,19 +7,79 @@ const TableViewer = () => {
     const [data, setData] = useState([]);
     const [loading, setLoading] = useState(false);
 
+    // Edit State
+    const [editingId, setEditingId] = useState(null);
+    const [editForm, setEditForm] = useState({});
+
     useEffect(() => {
         api.get('/tables').then(res => setTables(res.data)).catch(console.error);
     }, []);
 
-    useEffect(() => {
+    const fetchData = () => {
         if (selectedTable) {
             setLoading(true);
-            api.get(`/tables/${selectedTable}`)
+            // Use special endpoint for SoftwareSystem to get rich data, otherwise generic
+            const endpoint = selectedTable === 'SoftwareSystem' ? '/software' : `/tables/${selectedTable}`;
+
+            api.get(endpoint)
                 .then(res => setData(res.data))
                 .catch(console.error)
                 .finally(() => setLoading(false));
         }
+    };
+
+    useEffect(() => {
+        fetchData();
+        // Reset edit state when table changes
+        setEditingId(null);
+        setEditForm({});
     }, [selectedTable]);
+
+    // CRUD Operations
+    const handleDelete = async (row) => {
+        // Only support deleting SoftwareSystem for now as it has a specific API
+        if (selectedTable !== 'SoftwareSystem') {
+            alert('Deletion is currently only supported for the SoftwareSystem table.');
+            return;
+        }
+
+        if (!window.confirm('⚠️ WARNING: Deleting this software system will PERMANENTLY DELETE all associated evaluations and data.\n\nAre you sure you want to proceed?')) return;
+
+        try {
+            await api.delete(`/software/${row.SystemID}`);
+            fetchData();
+        } catch (err) {
+            const errorMessage = err.response?.data?.error || 'Failed to delete';
+            const errorDetails = err.response?.data?.details || '';
+            alert(`Error: ${errorMessage}\n${errorDetails}`);
+        }
+    };
+
+    const startEdit = (row) => {
+        if (selectedTable !== 'SoftwareSystem') {
+            alert('Editing is currently only supported for the SoftwareSystem table.');
+            return;
+        }
+        setEditingId(row.SystemID);
+        // Pre-fill form with current values
+        setEditForm({ brandName: row.BrandName, productType: row.TypeName });
+    };
+
+    const cancelEdit = () => {
+        setEditingId(null);
+        setEditForm({});
+    };
+
+    const handleUpdate = async (id) => {
+        try {
+            await api.put(`/software/${id}`, editForm);
+            setEditingId(null);
+            fetchData();
+        } catch (err) {
+            alert('Failed to update software');
+            console.error(err);
+        }
+    };
 
     return (
         <div className="bg-white/80 backdrop-blur-md shadow-xl rounded-2xl p-6 border border-white/20 h-full flex flex-col">
@@ -53,16 +113,67 @@ const TableViewer = () => {
                                                 {key}
                                             </th>
                                         ))}
+                                        {/* Add Actions Column if SoftwareSystem */}
+                                        {selectedTable === 'SoftwareSystem' && (
+                                            <th className="px-6 py-3 text-right text-xs font-bold text-gray-500 uppercase tracking-wider bg-gray-50">
+                                                Actions
+                                            </th>
+                                        )}
                                     </tr>
                                 </thead>
                                 <tbody className="bg-white divide-y divide-gray-200">
                                     {data.map((row, i) => (
                                         <tr key={i} className="hover:bg-indigo-50 transition-colors duration-150">
-                                            {Object.values(row).map((val, j) => (
+                                            {/* Render Cells */}
+                                            {Object.entries(row).map(([key, val], j) => (
                                                 <td key={j} className="px-6 py-4 whitespace-nowrap text-sm text-gray-700">
-                                                    {val}
+                                                    {/* Inline Edit Logic for SoftwareSystem */}
+                                                    {editingId === row.SystemID && selectedTable === 'SoftwareSystem' ? (
+                                                        key === 'BrandName' ? (
+                                                            <input
+                                                                className="p-1 border rounded w-full"
+                                                                value={editForm.brandName}
+                                                                onChange={e => setEditForm({ ...editForm, brandName: e.target.value })}
+                                                            />
+                                                        ) : key === 'TypeName' ? (
+                                                            <input
+                                                                className="p-1 border rounded w-full"
+                                                                value={editForm.productType}
+                                                                onChange={e => setEditForm({ ...editForm, productType: e.target.value })}
+                                                            />
+                                                        ) : (
+                                                            val // Non-editable fields like ID
+                                                        )
+                                                    ) : (
+                                                        val
+                                                    )}
                                                 </td>
                                             ))}
+
+                                            {/* Render Actions Buttons */}
+                                            {selectedTable === 'SoftwareSystem' && (
+                                                <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                                                    {editingId === row.SystemID ? (
+                                                        <div className="flex justify-end gap-2">
+                                                            <button onClick={() => handleUpdate(row.SystemID)} className="text-green-600 hover:text-green-900">
+                                                                Save
+                                                            </button>
+                                                            <button onClick={cancelEdit} className="text-gray-600 hover:text-gray-900">
+                                                                Cancel
+                                                            </button>
+                                                        </div>
+                                                    ) : (
+                                                        <div className="flex justify-end gap-2">
+                                                            <button onClick={() => startEdit(row)} className="text-indigo-600 hover:text-indigo-900">
+                                                                Edit
+                                                            </button>
+                                                            <button onClick={() => handleDelete(row)} className="text-red-600 hover:text-red-900">
+                                                                Delete
+                                                            </button>
+                                                        </div>
+                                                    )}
+                                                </td>
+                                            )}
                                         </tr>
                                     ))}
                                 </tbody>
