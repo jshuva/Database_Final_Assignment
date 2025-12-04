@@ -252,17 +252,18 @@ app.get('/api/analytics/insights', async (req, res) => {
         const [bestBrand] = await query(brandSql);
         insights.bestBrand = bestBrand || null;
 
-        // 2. Most Critical User (Lowest Avg Score given)
-        const userSql = `
-            SELECT u.UserPseudoEmail, AVG((e.Friendliness + e.Features + e.Accuracy) / 3) as AvgScore
-            FROM User u
-            JOIN Evaluation e ON u.UserID = e.UserID
-            GROUP BY u.UserID
-            ORDER BY AvgScore ASC
+        // 2. Top Category (Highest Avg Score)
+        const topCatSql = `
+            SELECT pt.TypeName, AVG((e.Friendliness + e.Features + e.Accuracy) / 3) as AvgScore
+            FROM ProductType pt
+            JOIN SoftwareSystem ss ON pt.ProductTypeID = ss.ProductTypeID
+            JOIN Evaluation e ON ss.SystemID = e.SystemID
+            GROUP BY pt.ProductTypeID
+            ORDER BY AvgScore DESC
             LIMIT 1
         `;
-        const [criticalUser] = await query(userSql);
-        insights.criticalUser = criticalUser || null;
+        const [topCategory] = await query(topCatSql);
+        insights.topCategory = topCategory || null;
 
         // 3. Most Popular Category (Most reviews)
         const catSql = `

@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import api from '../api';
 
 const AnalyticsDashboard = () => {
-    const [limit, setLimit] = useState(6);
+    const [limit, setLimit] = useState(5);
     const [data, setData] = useState([]);
     const [insights, setInsights] = useState(null);
     const [loading, setLoading] = useState(false);
@@ -39,14 +39,14 @@ const AnalyticsDashboard = () => {
                 </div>
 
                 <div className="bg-gradient-to-br from-pink-500 to-rose-600 rounded-2xl p-4 text-white shadow-lg">
-                    <h3 className="text-pink-100 text-sm font-medium uppercase tracking-wider">Most Critical User</h3>
-                    <div className="mt-2 truncate" title={insights?.criticalUser?.UserPseudoEmail}>
-                        <span className="text-lg font-bold block truncate">
-                            {insights?.criticalUser?.UserPseudoEmail ? insights.criticalUser.UserPseudoEmail.substring(0, 8) + '...' : 'N/A'}
+                    <h3 className="text-pink-100 text-sm font-medium uppercase tracking-wider">Top Category</h3>
+                    <div className="mt-2">
+                        <span className="text-2xl font-bold truncate block">
+                            {insights?.topCategory?.TypeName || 'N/A'}
                         </span>
                     </div>
                     <p className="text-xs text-pink-200 mt-1">
-                        Lowest Avg Score: {insights?.criticalUser?.AvgScore ? parseFloat(insights?.criticalUser?.AvgScore).toFixed(1) : '-'}
+                        Highest Avg Score: {insights?.topCategory?.AvgScore ? parseFloat(insights?.topCategory?.AvgScore).toFixed(1) : '-'}
                     </p>
                 </div>
 
