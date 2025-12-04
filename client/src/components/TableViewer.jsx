@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import api from '../api';
 
-const TableViewer = () => {
+const TableViewer = ({ defaultTable, allowedTables, refreshTrigger }) => {
     const [tables, setTables] = useState([]);
-    const [selectedTable, setSelectedTable] = useState('');
+    const [selectedTable, setSelectedTable] = useState(defaultTable || '');
     const [data, setData] = useState([]);
     const [loading, setLoading] = useState(false);
 
@@ -12,8 +12,14 @@ const TableViewer = () => {
     const [editForm, setEditForm] = useState({});
 
     useEffect(() => {
-        api.get('/tables').then(res => setTables(res.data)).catch(console.error);
-    }, []);
+        api.get('/tables').then(res => {
+            let fetchedTables = res.data;
+            if (allowedTables && allowedTables.length > 0) {
+                fetchedTables = fetchedTables.filter(t => allowedTables.includes(t));
+            }
+            setTables(fetchedTables);
+        }).catch(console.error);
+    }, [allowedTables]);
 
     const fetchData = () => {
         if (selectedTable) {
@@ -33,7 +39,7 @@ const TableViewer = () => {
         // Reset edit state when table changes
         setEditingId(null);
         setEditForm({});
-    }, [selectedTable]);
+    }, [selectedTable, refreshTrigger]);
 
     // CRUD Operations
     const handleDelete = async (row) => {

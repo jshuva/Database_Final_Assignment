@@ -7,6 +7,7 @@ import ReviewManagement from './components/ReviewManagement';
 
 function App() {
     const [activeTab, setActiveTab] = useState('overview');
+    const [softwareRefreshTrigger, setSoftwareRefreshTrigger] = useState(0);
 
     return (
         <div className="min-h-screen bg-gradient-to-br from-slate-100 via-gray-100 to-slate-200 p-4 md:p-8 font-sans">
@@ -31,24 +32,21 @@ function App() {
 
                 <main className="flex-1 overflow-hidden">
                     {activeTab === 'overview' && (
-                        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 h-full overflow-auto custom-scrollbar pb-4">
+                        <div className="h-full overflow-auto custom-scrollbar pb-4">
                             <AnalyticsDashboard />
-                            <div className="bg-white/60 rounded-2xl p-6 border border-white/20 flex flex-col justify-center items-center text-center">
-                                <h3 className="text-2xl font-bold text-gray-700 mb-2">Welcome to the Dashboard</h3>
-                                <p className="text-gray-500 max-w-md">
-                                    Select a tab above to manage software, submit reviews, or analyze data.
-                                </p>
-                            </div>
                         </div>
                     )}
 
                     {activeTab === 'software' && (
                         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 h-full overflow-hidden">
                             <div className="lg:col-span-4 h-full overflow-auto custom-scrollbar pb-4">
-                                <AddSoftwareForm />
+                                <AddSoftwareForm onSuccess={() => setSoftwareRefreshTrigger(prev => prev + 1)} />
                             </div>
                             <div className="lg:col-span-8 h-full overflow-hidden">
-                                <TableViewer defaultTable="SoftwareSystem" />
+                                <TableViewer
+                                    allowedTables={['SoftwareSystem', 'Brand', 'ProductType']}
+                                    refreshTrigger={softwareRefreshTrigger}
+                                />
                             </div>
                         </div>
                     )}
@@ -80,8 +78,8 @@ const TabButton = ({ active, onClick, label }) => (
     <button
         onClick={onClick}
         className={`px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 ${active
-                ? 'bg-white text-indigo-600 shadow-md'
-                : 'text-gray-600 hover:bg-white/50 hover:text-gray-900'
+            ? 'bg-white text-indigo-600 shadow-md'
+            : 'text-gray-600 hover:bg-white/50 hover:text-gray-900'
             } `}
     >
         {label}
